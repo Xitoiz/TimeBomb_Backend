@@ -24,6 +24,7 @@ public class AuthService implements UserDetailsService {
 		
 		this.userSession.setId(user.getId());
 		this.userSession.setName(user.getPseudo());
+		this.userSession.setAccountType(user.getAccountType());
 
 		return new UserPrincipal(user);
 	}

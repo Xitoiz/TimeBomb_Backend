@@ -2,6 +2,8 @@ package fr.xitoiz.timebomb.models;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -9,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import fr.xitoiz.timebomb.enums.AccountType;
 import fr.xitoiz.timebomb.enums.PlayerRole;
 
 @Entity
@@ -20,7 +23,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-    @Column(name = "USER_PSEUDO", length = 25, nullable = false)
+    @Column(name = "USER_PSEUDO", length = 25, nullable = false, unique=true)
 	private String pseudo;
 	
 	@Column(name = "USER_LOGIN", length = 25, nullable = false)
@@ -34,24 +37,30 @@ public class User {
 	private Match currentMatch;
 	
     @Column(name = "USER_MATCH_ROLE")
-	private PlayerRole role;
+    @Enumerated(EnumType.STRING)
+	private PlayerRole playerRole;
+    
+    @Column(name = "USER_SYSTEM_ROLE")
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
 
 
 	public User() {
 	}
  
-	public User(Integer id, String pseudo, String login, String password, Match currentMatch, PlayerRole role) {
+	public User(Integer id, String pseudo, String login, String password, Match currentMatch, PlayerRole playerRole, AccountType accountType) {
 		this.id = id;
 		this.pseudo = pseudo;
 		this.login = login;
 		this.password = password;
 		this.currentMatch = currentMatch;
-		this.role = role;
+		this.playerRole = playerRole;
+		this.accountType = accountType;
 	}
 	
 	
 	public Integer getId() {
-		return id;
+		return this.id;
 	}
 
 	public void setId(Integer id) {
@@ -59,7 +68,7 @@ public class User {
 	}
 
 	public String getPseudo() {
-		return pseudo;
+		return this.pseudo;
 	}
 
 	public void setPseudo(String pseudo) {
@@ -67,7 +76,7 @@ public class User {
 	}
 
 	public String getLogin() {
-		return login;
+		return this.login;
 	}
 
 	public void setLogin(String login) {
@@ -75,7 +84,7 @@ public class User {
 	}
 
 	public String getPassword() {
-		return password;
+		return this.password;
 	}
 
 	public void setPassword(String password) {
@@ -83,19 +92,26 @@ public class User {
 	}
 
 	public Match getCurrentMatch() {
-		return currentMatch;
+		return this.currentMatch;
 	}
 
 	public void setCurrentMatch(Match currentMatch) {
 		this.currentMatch = currentMatch;
 	}
 
-	public PlayerRole getRole() {
-		return role;
+	public PlayerRole getPlayerRole() {
+		return this.playerRole;
 	}
 
-	public void setRole(PlayerRole role) {
-		this.role = role;
+	public void setRole(PlayerRole playerRole) {
+		this.playerRole = playerRole;
 	}
-    
+
+	public AccountType getAccountType() {
+		return this.accountType;
+	}
+
+	public void setAccountType(AccountType accountType) {
+		this.accountType = accountType;
+	}
 }

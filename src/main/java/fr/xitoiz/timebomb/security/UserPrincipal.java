@@ -21,7 +21,7 @@ public class UserPrincipal implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return Arrays.asList(new SimpleGrantedAuthority("ROLE_PLAYER"));
+		return Arrays.asList(new SimpleGrantedAuthority("ROLE_" + this.user.getAccountType().toString()));
 	}
 
 	@Override

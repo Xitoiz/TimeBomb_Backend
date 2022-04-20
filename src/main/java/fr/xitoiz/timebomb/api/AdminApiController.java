@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/resultat")
-public class ResultatApiController {
-
+@RequestMapping("/admin")
+public class AdminApiController {
+	
 }

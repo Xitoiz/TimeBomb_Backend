@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>fr.xitoiz.timebomb</groupId>
-	<artifactId>timeBombV2</artifactId>
+	<artifactId>timeBomb</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>timeBombV2</name>
+	<name>timeBomb</name>
 	<description>Timebomb Project</description>
 	<properties>
 		<java.version>11</java.version>

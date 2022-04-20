@@ -21,7 +21,7 @@ import fr.xitoiz.timebomb.services.UserSession;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserApiController {
 	
     @Autowired
