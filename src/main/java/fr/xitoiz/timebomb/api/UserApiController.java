@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.xitoiz.timebomb.dao.IDAOUser;
+import fr.xitoiz.timebomb.exeption.LoginAlreadyUsedException;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
-import fr.xitoiz.timebomb.exeption.UserExistsException;
 import fr.xitoiz.timebomb.exeption.UserNotFoundException;
 import fr.xitoiz.timebomb.models.User;
 import fr.xitoiz.timebomb.services.UserSession;
@@ -37,7 +37,7 @@ public class UserApiController {
     private void inscription(@Valid @RequestBody User user) {
     	Optional<User> dbUser = this.daoUser.findByLogin(user.getLogin());
     	
-    	if (!dbUser.isEmpty()) { throw new UserExistsException(); }
+    	if (!dbUser.isEmpty()) { throw new LoginAlreadyUsedException(); }
     	
     	user.setPassword(this.passwordEncoder.encode(user.getPassword()));
     	
@@ -56,7 +56,8 @@ public class UserApiController {
 		}
 		
 		this.userSession.setId(dbUser.getId());
-		this.userSession.setName(dbUser.getPseudo());
+		this.userSession.setPseudo(dbUser.getPseudo());
+		this.userSession.setAccountType(dbUser.getAccountType());
 
 		return dbUser;
 	}

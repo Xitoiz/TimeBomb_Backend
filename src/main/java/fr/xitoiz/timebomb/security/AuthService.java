@@ -23,7 +23,7 @@ public class AuthService implements UserDetailsService {
 		User user = this.daoUser.findByLogin(username).orElseThrow(() -> new UsernameNotFoundException("Username not found."));
 		
 		this.userSession.setId(user.getId());
-		this.userSession.setName(user.getPseudo());
+		this.userSession.setPseudo(user.getPseudo());
 		this.userSession.setAccountType(user.getAccountType());
 
 		return new UserPrincipal(user);

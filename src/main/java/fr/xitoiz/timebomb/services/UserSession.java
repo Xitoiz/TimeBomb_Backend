@@ -24,7 +24,7 @@ public class UserSession {
 		return pseudo;
 	}
 
-	public void setName(String pseudo) {
+	public void setPseudo(String pseudo) {
 		this.pseudo = pseudo;
 	}
 	

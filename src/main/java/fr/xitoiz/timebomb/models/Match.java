@@ -1,5 +1,6 @@
 package fr.xitoiz.timebomb.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -17,7 +18,6 @@ import javax.persistence.Table;
 
 import fr.xitoiz.timebomb.enums.MatchState;
 import fr.xitoiz.timebomb.enums.PlayerRole;
-import fr.xitoiz.timebomb.services.UserSession;
 
 @Entity
 @Table(name = "[MATCH]") // (name = "MATCH") est interdit par MySQL
@@ -118,14 +118,9 @@ public class Match {
 		this.playerList = playerList;
 	}
 	
-	public void addPlayerToList(User player) {
-		this.playerList.add(player);
-	}
-	
-	public void addPlayerToList(UserSession userSession) {
-		User player = new User();
-		player.setId(userSession.getId());
-		this.playerList.add(player);
+	public void addPlayer(User user) {
+		if (this.playerList == null) {this.playerList = new ArrayList<>();}
+		this.playerList.add(user);
 	}
 
 	public User getLastPlayer() {
