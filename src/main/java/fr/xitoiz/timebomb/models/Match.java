@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -30,6 +31,10 @@ public class Match {
 	
 	@Column(name = "MATCH_NAME", length = 25, nullable = false)
 	private String name;
+	
+	@ManyToOne
+	@JoinColumn(name = "MATCH_OWNER_ID")
+	private User owner;
 	
 	@Column(name = "MATCH_STATE", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -61,10 +66,11 @@ public class Match {
 	@Column(name = "MATCH_LOOSERS")
 	private List<User> loosers;
 
-	public Match(int id, String name, MatchState state, List<Card> cardList, List<User> playerList, User lastPlayer,
+	public Match(int id, String name, User owner, MatchState state, List<Card> cardList, List<User> playerList, User lastPlayer,
 			User currentPlayer, PlayerRole winnerRole, List<User> winners, List<User> loosers) {
 		this.id = id;
 		this.name = name;
+		this.owner = owner;
 		this.state = state;
 		this.cardList = cardList;
 		this.playerList = playerList;
@@ -92,6 +98,14 @@ public class Match {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public User getOwner() {
+		return this.owner;
+	}
+
+	public void setOwner(User owner) {
+		this.owner = owner;
 	}
 
 	public MatchState getState() {

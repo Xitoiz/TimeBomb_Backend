@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.xitoiz.timebomb.dao.IDAOCard;
-import fr.xitoiz.timebomb.dao.IDAOMatch;
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.CardType;
+import fr.xitoiz.timebomb.enums.PlayerRole;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
 import fr.xitoiz.timebomb.models.Card;
 import fr.xitoiz.timebomb.models.Match;
@@ -18,21 +16,49 @@ import fr.xitoiz.timebomb.models.User;
 
 @Service
 public class MatchService {
-	
-	@Autowired
-	private IDAOMatch daoMatch;
-	
-	@Autowired
-	private IDAOCard daoCard;
 
-	public void generateCard(Match match) {
+	public Match generateRole(Match match) {
+		
+		List<User> listOfPlayer = match.getPlayerList();
+		ArrayList<PlayerRole> listOfPlayerRole = new ArrayList<>();
+		
+		switch(listOfPlayer.size()) {
+			case 8:
+			case 7:
+				listOfPlayerRole.add(PlayerRole.MORIARTY);
+				listOfPlayerRole.add(PlayerRole.SHERLOCK);
+			
+			case 6:	
+				listOfPlayerRole.add(PlayerRole.SHERLOCK);
+			case 5:
+			case 4:
+				listOfPlayerRole.add(PlayerRole.MORIARTY);
+				listOfPlayerRole.add(PlayerRole.MORIARTY);
+				listOfPlayerRole.add(PlayerRole.SHERLOCK);
+				listOfPlayerRole.add(PlayerRole.SHERLOCK);
+				listOfPlayerRole.add(PlayerRole.SHERLOCK);
+				break;
+			default:
+				throw new TransactionErrorException();
+			}
+		
+		Collections.shuffle(listOfPlayerRole);
+		
+		for (int i = 0; i < listOfPlayerRole.size(); i++) {
+			listOfPlayer.get(i).setRole(listOfPlayerRole.get(i));
+		}
+		
+		return match;
+	}
+	
+	public Match generateCard(Match match) {
 		int nbUser = match.getPlayerList().size();
 		
 		int nbDefuse = nbUser;
 		int nbBait = 5 * nbUser - 1;
 		
 		ArrayList<CardType> listOfCardType = new ArrayList<>();
-		ArrayList<Card> listOfCards = new ArrayList<>();
+		List<Card> listOfCards = new ArrayList<>();
 		
 		listOfCardType.add(CardType.BOMB);
 		
@@ -46,27 +72,14 @@ public class MatchService {
 			listOfCards.add(card);
 		}
 		
-		try {
-			this.daoCard.saveAll(listOfCards);
-		} catch (Exception e) {
-			throw new TransactionErrorException();
-		}
-		
 		match.setCardList(listOfCards);
 		
-		try {
-			this.daoMatch.save(match);
-		} catch (Exception e) {
-			throw new TransactionErrorException();
-		}
-		
-		distributeCards(match);
+		return match;
 	}
 	
-	public void distributeCards(Match match) {
-
-		List<User> listPlayer = match.getPlayerList();
+	public Match distributeCards(Match match) {
 		
+		List<User> listPlayer = match.getPlayerList();
 		List<Card> listCard = match.getCardList();
 		
 		ArrayList<CardType> listCardType = new ArrayList<>();
@@ -103,6 +116,6 @@ public class MatchService {
 			}
 		}
 		
-		this.daoMatch.save(match);
+		return match;
 	}
 }

@@ -1,5 +1,6 @@
 package fr.xitoiz.timebomb.api;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import fr.xitoiz.timebomb.services.UserSession;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/match")
+@RequestMapping("/api/v1/match")
 public class MatchApiController {
 		
 	@Autowired
@@ -56,6 +57,8 @@ public class MatchApiController {
 		User user = this.daoUser.getById(this.userSession.getId());
 		if (user.getCurrentMatch() != null) {throw new PlayerInAMatchException();}
 		
+		match.setOwner(user);
+		
 		user.setCurrentMatch(match);
 		this.daoMatch.save(match);
 	
@@ -74,7 +77,7 @@ public class MatchApiController {
 		user.setCurrentMatch(match);
 		this.daoUser.save(user);
 		
-		System.out.println("Le user "  + user.getId() + "-" + user.getPseudo() + " a rejoint le match " + match.getId());
+		System.out.println("Le user " + user.getId() + "-" + user.getPseudo() + " a rejoint le match " + match.getId());
 	}
 	
 	@PostMapping("/leave")
@@ -85,11 +88,10 @@ public class MatchApiController {
 		if (user.getCurrentMatch().getState() == MatchState.PLAYING) {throw new MatchNotLeavableException();}
 		if (user.getCurrentMatch().getId() != matchRequested.getId()) {throw new PlayerNotInThisMatchException();}
 		
-		// Bloc pout quitter le match
 		user.setCurrentMatch(null);
 		this.daoUser.save(user);
 		
-		System.out.println("Le user "  + user.getId() + "-" + user.getPseudo() + " a quitté le match " + match.getId());	
+		System.out.println("Le user " + user.getId() + "-" + user.getPseudo() + " a quitté le match " + match.getId());	
 		
 		if (match.getPlayerList().size() == 0) {
 			switch (match.getState()) {
@@ -110,13 +112,23 @@ public class MatchApiController {
 	}
 	
 	@GetMapping("/start")
+	@Transactional
 	private void startMatch() {
 		User user = this.daoUser.getById(this.userSession.getId());
 		Match match = user.getCurrentMatch();
 		
 		if (match.getState() != MatchState.PENDING) {throw new MatchNotStartableException();}
-		if (match.getPlayerList().size() > 8 || match.getPlayerList().size() < 4) {throw new MatchNotStartableException();}
 		
-		this.matchService.generateCard(match);
+		if (match.getPlayerList().size() > 8 || match.getPlayerList().size() < 1) {throw new MatchNotStartableException();}
+		
+		match = this.matchService.generateRole(match);
+		match = this.matchService.generateCard(match);
+		match = this.matchService.distributeCards(match);
+				
+		this.daoCard.saveAll(match.getCardList());
+		this.daoMatch.save(match);
+		
+		System.out.println("Le match " + match.getId() + " a été généré.");
+		System.out.println("Les cartes du match "  + match.getId() + " de "+ match.getCardList().get(0).getId() + " à " + match.getCardList().get(match.getCardList().size() - 1).getId() + " a été généré.");
 	}
 }
