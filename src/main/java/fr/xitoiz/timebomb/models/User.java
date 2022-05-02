@@ -11,8 +11,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import fr.xitoiz.timebomb.enums.AccountType;
 import fr.xitoiz.timebomb.enums.PlayerRole;
+import fr.xitoiz.timebomb.projection.Views;
 
 @Entity
 @Table(name = "USER")
@@ -21,9 +24,11 @@ public class User {
     @Id
     @Column(name = "USER_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonView(Views.Common.class)
 	private Integer id;
 	
     @Column(name = "USER_PSEUDO", length = 25, nullable = false, unique=true)
+    @JsonView(Views.Common.class)
 	private String pseudo;
 	
 	@Column(name = "USER_LOGIN", length = 25, nullable = false)
@@ -34,14 +39,17 @@ public class User {
 	
     @ManyToOne
     @JoinColumn(name = "USER_MATCH_ID")
+    @JsonView(Views.User.class)
 	private Match currentMatch;
 	
     @Column(name = "USER_MATCH_ROLE")
     @Enumerated(EnumType.STRING)
+    @JsonView(Views.Common.class)
 	private PlayerRole playerRole;
     
     @Column(name = "USER_SYSTEM_ROLE")
     @Enumerated(EnumType.STRING)
+    @JsonView(Views.Common.class)
     private AccountType accountType;
 
 

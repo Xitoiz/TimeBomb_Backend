@@ -44,7 +44,7 @@ public class MatchService {
 		
 		Collections.shuffle(listOfPlayerRole);
 		
-		for (int i = 0; i < listOfPlayerRole.size(); i++) {
+		for (int i = 0; i < listOfPlayer.size(); i++) {
 			listOfPlayer.get(i).setRole(listOfPlayerRole.get(i));
 		}
 		
@@ -116,6 +116,53 @@ public class MatchService {
 			}
 		}
 		
+		return match;
+	}
+
+	public boolean isDefuseLeft(Match match) {
+		List<Card> listOfCard = match.getCardList();
+		
+		for (Card card: listOfCard) {
+			if (card.getType() == CardType.DIFFUSE && card.getState() == CardState.HIDDEN) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isRoundOver(Match match) {
+		List<Card> listOfCard = match.getCardList();
+		int nbCardRevealedThisTurn = 0;
+		int nbPlayer = match.getPlayerList().size();
+		
+		for (Card card: listOfCard) {
+			if (card.getOwner() != null && card.getState() == CardState.REVEALED) {
+				nbCardRevealedThisTurn = nbCardRevealedThisTurn + 1;
+			}
+		}
+		
+		return (nbCardRevealedThisTurn == nbPlayer)? true : false;
+	}
+
+	public boolean isMatchOver(Match match) {
+		List<Card> listOfCard = match.getCardList();
+		int nbCardHidden = 0;
+		int nbPlayer = match.getPlayerList().size();
+		
+		for (Card card: listOfCard) {
+			if (card.getState() == CardState.HIDDEN) {
+				nbCardHidden = nbCardHidden + 1;
+			}
+		}
+		
+		return (nbCardHidden == nbPlayer)? true : false;
+	}
+
+	public Match revealAllCards(Match match) {
+		List<Card> listOfCard = match.getCardList();
+		for (Card card: listOfCard) {
+			card.setState(CardState.REVEALED);
+		}
 		return match;
 	}
 }

@@ -17,8 +17,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import fr.xitoiz.timebomb.enums.MatchState;
 import fr.xitoiz.timebomb.enums.PlayerRole;
+import fr.xitoiz.timebomb.projection.Views;
 
 @Entity
 @Table(name = "[MATCH]") // (name = "MATCH") est interdit par MySQL
@@ -27,13 +30,16 @@ public class Match {
 	@Id
     @Column(name = "MATCH_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonView(Views.Common.class)
 	private int id;
 	
 	@Column(name = "MATCH_NAME", length = 25, nullable = false)
+	@JsonView(Views.Common.class)
 	private String name;
 	
 	@ManyToOne
 	@JoinColumn(name = "MATCH_OWNER_ID")
+	@JsonView(Views.Match.class)
 	private User owner;
 	
 	@Column(name = "MATCH_STATE", nullable = false)
@@ -41,9 +47,11 @@ public class Match {
 	private MatchState state = MatchState.PENDING;
 	
 	@OneToMany(mappedBy = "match")
+	@JsonView(Views.Match.class)
 	private List<Card> cardList;
 	
 	@OneToMany(mappedBy = "currentMatch")
+	@JsonView(Views.Match.class)
 	private List<User> playerList;
 	
 	@OneToOne

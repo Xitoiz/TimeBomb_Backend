@@ -11,6 +11,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
+import fr.xitoiz.timebomb.projection.Views;
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.CardType;
 
@@ -21,22 +24,30 @@ public class Card {
 	@Id
     @Column(name = "CARD_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonView(Views.Common.class)
 	private Integer id;
 	
 	@ManyToOne
 	@JoinColumn(name = "CARD_MATCH_ID")
+	@JsonView(Views.Card.class)
 	private Match match;
 	
 	@ManyToOne
 	@JoinColumn(name = "CARD_OWNER_ID")
+	@JsonView({
+		Views.Card.class,
+		Views.MatchAdmin.class
+	})
 	private User owner;
 	
 	@Column(name = "CARD_TYPE")
 	@Enumerated(EnumType.STRING)
+	@JsonView(Views.Common.class)
 	private CardType type;
 	
 	@Column(name = "CARD_STATE")
 	@Enumerated(EnumType.STRING)
+	@JsonView(Views.Common.class)
 	private CardState state = CardState.HIDDEN;
 
 	public Card(Integer id, Match match, User owner, CardType type, CardState state) {
