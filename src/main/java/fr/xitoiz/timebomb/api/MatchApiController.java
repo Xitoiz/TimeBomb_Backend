@@ -79,7 +79,8 @@ public class MatchApiController {
 	
 	
 	@PostMapping("/create")
-	private void createMatch(@Valid @RequestBody Match match) {
+	@JsonView(Views.Match.class)
+	private Match createMatch(@Valid @RequestBody Match match) {
 		User user = this.daoUser.getById(this.userSession.getId());
 		if (user.getCurrentMatch() != null) {throw new PlayerInAMatchException();}
 		
@@ -89,6 +90,7 @@ public class MatchApiController {
 		this.daoMatch.save(match);
 		System.out.println("Le match d'id " + match.getId() + " a été créé à la demande de " + user.getId() + " - " + user.getPseudo() + ".");
 		
+		return match;
 	}
 	
 	@PostMapping("/join")
@@ -190,10 +192,11 @@ public class MatchApiController {
 					break;
 				}
 			case BAIT:
-				if (!matchService.isMatchOver(match)) {
+				if (matchService.isMatchOver(match)) {
 					match.setWinnerRole(PlayerRole.MORIARTY);
 					match.setState(MatchState.TERMINATED);
 					match = matchService.revealAllCards(match);
+					System.out.println("Le match est terminé");
 					break;
 				}
 				if(matchService.isRoundOver(match)) {

@@ -89,30 +89,29 @@ public class MatchService {
 		int nbCardToDistribute = 0;
 		
 		for (Card card : listCard) {
-			if (card.getState().equals(CardState.HIDDEN)) {nbCardToDistribute = nbCardToDistribute + 1;}
+			card.setOwner(null);
+			if (card.getState().equals(CardState.HIDDEN)) {
+				nbCardToDistribute = nbCardToDistribute + 1;
+				listCardType.add(card.getType());}
 		}
 		
-		nbCardToDistribute = nbCardToDistribute / nbUser;
+		int nbCardForEachHand = nbCardToDistribute / nbUser;
 		
 		for (User player : listPlayer) {
-			for (int i = 0; i < nbCardToDistribute; i++) {
+			for (int i = 0; i < nbCardForEachHand; i++) {
 				listUser.add(player);
 			}
 		}
 		
-		for (Card card : listCard) {
-			listCardType.add(card.getType());
-		}
-		
 		Collections.shuffle(listCardType);
 		
-		for (int i = 0; i < listCardType.size(); i++) {
-			Card card = listCard.get(i);
-			card.setOwner(null);
+		int indexList = 0;
+		
+		for (Card card: listCard) {
 			if (card.getState().equals(CardState.HIDDEN)) {
-				card.setType(listCardType.get(i));
-				card.setOwner(listUser.get(i));
-				listCard.set(i, card);
+				card.setType(listCardType.get(indexList));
+				card.setOwner(listUser.get(indexList));
+				indexList = indexList + 1;
 			}
 		}
 		
