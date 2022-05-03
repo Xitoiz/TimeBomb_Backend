@@ -25,7 +25,7 @@ public class User {
     @Column(name = "USER_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonView(Views.Common.class)
-	private Integer id;
+	private int id;
 	
     @Column(name = "USER_PSEUDO", length = 25, nullable = false, unique=true)
     @JsonView(Views.Common.class)
@@ -37,6 +37,11 @@ public class User {
 	@Column(name = "USER_PASSWORD", length = 250, nullable = false)
 	private String password;
 	
+    @Column(name = "USER_SYSTEM_ROLE")
+    @Enumerated(EnumType.STRING)
+    @JsonView(Views.Common.class)
+    private AccountType accountType;
+    
     @ManyToOne
     @JoinColumn(name = "USER_MATCH_ID")
     @JsonView(Views.User.class)
@@ -46,16 +51,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     @JsonView(Views.Common.class)
 	private PlayerRole playerRole;
+
     
-    @Column(name = "USER_SYSTEM_ROLE")
-    @Enumerated(EnumType.STRING)
-    @JsonView(Views.Common.class)
-    private AccountType accountType;
-
-
-	public User() {
-	}
- 
 	public User(Integer id, String pseudo, String login, String password, Match currentMatch, PlayerRole playerRole, AccountType accountType) {
 		this.id = id;
 		this.pseudo = pseudo;
@@ -66,8 +63,11 @@ public class User {
 		this.accountType = accountType;
 	}
 	
+	public User() {
+	}
+
 	
-	public Integer getId() {
+	public int getId() {
 		return this.id;
 	}
 

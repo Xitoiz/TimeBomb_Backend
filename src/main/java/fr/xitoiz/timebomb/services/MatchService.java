@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.CardType;
+import fr.xitoiz.timebomb.enums.MatchState;
 import fr.xitoiz.timebomb.enums.PlayerRole;
-import fr.xitoiz.timebomb.exeption.TransactionErrorException;
 import fr.xitoiz.timebomb.models.Card;
 import fr.xitoiz.timebomb.models.Match;
 import fr.xitoiz.timebomb.models.User;
@@ -17,31 +19,31 @@ import fr.xitoiz.timebomb.models.User;
 @Service
 public class MatchService {
 
+	private final Logger logger;
+	
+	public MatchService() {
+		this.logger = LoggerFactory.getLogger(MatchService.class);
+	}
+	
 	public Match generateRole(Match match) {
 		
 		List<User> listOfPlayer = match.getPlayerList();
 		ArrayList<PlayerRole> listOfPlayerRole = new ArrayList<>();
 		
-		switch(listOfPlayer.size()) {
-			case 8:
-			case 7:
-				listOfPlayerRole.add(PlayerRole.MORIARTY);
-				listOfPlayerRole.add(PlayerRole.SHERLOCK);
-			
-			case 6:	
-				listOfPlayerRole.add(PlayerRole.SHERLOCK);
-			case 5:
-			case 4:
-				listOfPlayerRole.add(PlayerRole.MORIARTY);
-				listOfPlayerRole.add(PlayerRole.MORIARTY);
-				listOfPlayerRole.add(PlayerRole.SHERLOCK);
-				listOfPlayerRole.add(PlayerRole.SHERLOCK);
-				listOfPlayerRole.add(PlayerRole.SHERLOCK);
-				break;
-			default:
-				throw new TransactionErrorException();
-			}
+		listOfPlayerRole.add(PlayerRole.MORIARTY);
+		listOfPlayerRole.add(PlayerRole.MORIARTY);
+		listOfPlayerRole.add(PlayerRole.SHERLOCK);
+		listOfPlayerRole.add(PlayerRole.SHERLOCK);
+		listOfPlayerRole.add(PlayerRole.SHERLOCK);
 		
+		if (listOfPlayer.size() > 5) {
+			listOfPlayerRole.add(PlayerRole.SHERLOCK);
+			if (listOfPlayer.size() > 6) {
+				listOfPlayerRole.add(PlayerRole.MORIARTY);
+				listOfPlayerRole.add(PlayerRole.SHERLOCK);
+			}
+		}
+				
 		Collections.shuffle(listOfPlayerRole);
 		
 		for (int i = 0; i < listOfPlayer.size(); i++) {
@@ -140,7 +142,7 @@ public class MatchService {
 			}
 		}
 		
-		return (nbCardRevealedThisTurn == nbPlayer)? true : false;
+		return nbCardRevealedThisTurn == nbPlayer;
 	}
 
 	public boolean isMatchOver(Match match) {
@@ -154,7 +156,7 @@ public class MatchService {
 			}
 		}
 		
-		return (nbCardHidden == nbPlayer)? true : false;
+		return nbCardHidden == nbPlayer;
 	}
 
 	public Match revealAllCards(Match match) {
@@ -164,4 +166,43 @@ public class MatchService {
 		}
 		return match;
 	}
+	
+	public Match switchDiffuseCase(Match match) {
+		if (!isDefuseLeft(match)) {
+			match.setState(MatchState.TERMINATED);
+			match = revealAllCards(match);
+			this.logger.trace("Le match est terminé. La team Sherlock a gagné en désamorçant la bombe");
+		}
+		if (isMatchOver(match)) {
+			match.setState(MatchState.TERMINATED);
+			match = revealAllCards(match);
+			this.logger.trace("Le match est terminé. La team Sherlock n'a pas désamorcé la bombe");
+		}
+		if(isRoundOver(match)) {
+			match = distributeCards(match);
+		}
+		
+		return match;
+	}
+
+	public Match switchBaitCase(Match match) {
+		if (isMatchOver(match)) {
+			match.setState(MatchState.TERMINATED);
+			match = revealAllCards(match);
+			this.logger.trace("Le match est terminé. La team Sherlock n'a pas désamorcé la bombe");
+		}
+		if(isRoundOver(match)) {
+			match = distributeCards(match);
+		}
+		return match;
+	}
+	
+	public Match switchBombCase(Match match) {
+		match.setState(MatchState.TERMINATED);
+		match = revealAllCards(match);
+		this.logger.trace("Le match est terminé. La team Moriarty a fait explosé la bombe");
+		
+		return match;
+	}
+
 }

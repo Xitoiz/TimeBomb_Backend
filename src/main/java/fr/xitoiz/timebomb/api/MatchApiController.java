@@ -1,7 +1,8 @@
 package fr.xitoiz.timebomb.api;
 
+import java.security.SecureRandom;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -23,8 +24,10 @@ import fr.xitoiz.timebomb.dao.IDAOMatch;
 import fr.xitoiz.timebomb.dao.IDAOUser;
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.MatchState;
-import fr.xitoiz.timebomb.enums.PlayerRole;
+import fr.xitoiz.timebomb.exeption.CardAlreadyRevealedException;
 import fr.xitoiz.timebomb.exeption.CardNotFoundException;
+import fr.xitoiz.timebomb.exeption.CurrentPlayerCardException;
+import fr.xitoiz.timebomb.exeption.LastPlayerCardException;
 import fr.xitoiz.timebomb.exeption.MatchNotFoundException;
 import fr.xitoiz.timebomb.exeption.MatchNotJoinableException;
 import fr.xitoiz.timebomb.exeption.MatchNotLeavableException;
@@ -34,6 +37,7 @@ import fr.xitoiz.timebomb.exeption.PlayerInAMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotInAMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotInThisMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotYourTurnException;
+import fr.xitoiz.timebomb.exeption.TransactionErrorException;
 import fr.xitoiz.timebomb.exeption.UserNotFoundException;
 import fr.xitoiz.timebomb.models.Card;
 import fr.xitoiz.timebomb.models.Match;
@@ -73,15 +77,21 @@ public class MatchApiController {
 	@JsonView(Views.Match.class)
 	private Match getMatch() {
 		User user = this.daoUser.findById(this.userSession.getId()).orElseThrow(UserNotFoundException::new);
-		this.logger.trace("Le user {}-{} a demandé son match ...", user.getId(), user.getPseudo());
+		this.logger.trace("Le user {}-{} a demandé son match ...",
+				user.getId(),
+				user.getPseudo());
 		
 		if (user.getCurrentMatch() == null) {
-			this.logger.trace("Le user {}-{} n'est dans aucun match !", user.getId(), user.getPseudo());
+			this.logger.trace("Le user {}-{} n'est dans aucun match !",
+					user.getId(),
+					user.getPseudo());
 			throw new PlayerNotInAMatchException();
-			}
+		}
 		
 		Match match = this.daoMatch.findById(user.getCurrentMatch().getId()).orElseThrow(MatchNotFoundException::new);
-		this.logger.trace("Le user {}-{} a récupéré son match", user.getId(), user.getPseudo());
+		this.logger.trace("Le user {}-{} a récupéré son match",
+				user.getId(),
+				user.getPseudo());
 		
 		return match;
 	}
@@ -99,11 +109,14 @@ public class MatchApiController {
 		User user = this.daoUser.getById(this.userSession.getId());
 		if (user.getCurrentMatch() != null) {throw new PlayerInAMatchException();}
 		
-		match.setOwner(user);
 		user.setCurrentMatch(match);
 		
 		this.daoMatch.save(match);
-		this.logger.trace("Le match d'id " + match.getId() + " a été créé à la demande de (" + user.getId() + ")" + user.getPseudo() + ".");
+		this.logger.trace("Le match d'id {} a été créé à la demande de ({}){}.",
+				match.getId(),
+				user.getId(),
+				user.getPseudo());
+		
 		return match;
 	}
 	
@@ -118,7 +131,10 @@ public class MatchApiController {
 		user.setCurrentMatch(match);
 		this.daoUser.save(user);
 		
-		this.logger.trace("Le user " + user.getId() + "-" + user.getPseudo() + " a rejoint le match " + match.getId());
+		this.logger.trace("Le user {}-{} a rejoint le match {}",
+				user.getId(),
+				user.getPseudo(),
+				match.getId());
 	}
 	
 	@PostMapping("/leave")
@@ -133,19 +149,22 @@ public class MatchApiController {
 		user.setCurrentMatch(null);
 		this.daoUser.save(user);
 		
-		this.logger.trace("Le user " + user.getId() + "-" + user.getPseudo() + " a quitté le match " + match.getId());	
+		this.logger.trace("Le user {}-{} a quitté le match {}",
+				user.getId(),
+				user.getPseudo(),
+				match.getId());	
 		
-		if (match.getPlayerList().size() == 0) {
+		if (match.getPlayerList().isEmpty()) {
 			switch (match.getState()) {
 				case TERMINATED:
 					this.daoCard.clearMatch(match.getId());
-					this.logger.trace("Les cartes du match " + match.getId() + " ont été clear.");
+					this.logger.trace("Les cartes du match {} ont été clear", match.getId());
 					this.daoCard.deleteCardMatch(match.getId());
-					this.logger.trace("Les cartes du match " + match.getId() + " ont été supprimées.");
+					this.logger.trace("Les cartes du match {} ont été supprimées", match.getId());
 					break;
 				case PENDING:
 					this.daoMatch.deleteById(match.getId());
-					this.logger.trace("Le match " + match.getId() + " a été effacé.");
+					this.logger.trace("Le match {} a été effacé", match.getId());
 					break;
 				case PLAYING:
 					this.logger.trace("Erreur switch");
@@ -166,8 +185,9 @@ public class MatchApiController {
 		match = this.matchService.generateRole(match);
 		match = this.matchService.generateCard(match);
 		match = this.matchService.distributeCards(match);
-				
-		int randomNum = ThreadLocalRandom.current().nextInt(0, match.getPlayerList().size());
+		
+		Random rand = new SecureRandom();
+		int randomNum = rand.nextInt(match.getPlayerList().size());
 		match.setCurrentPlayer(match.getPlayerList().get(randomNum));
 		match.setLastPlayer(match.getPlayerList().get(randomNum));
 		match.setState(MatchState.PLAYING);
@@ -175,57 +195,48 @@ public class MatchApiController {
 		this.daoCard.saveAll(match.getCardList());
 		this.daoMatch.save(match);
 				
-		this.logger.trace("Le match " + match.getId() + " a été généré.");
-		this.logger.trace("Les cartes du match "  + match.getId() + " de "+ match.getCardList().get(0).getId() + " à " + match.getCardList().get(match.getCardList().size() - 1).getId() + " a été généré.");
+		this.logger.trace("Le match {} a été généré.", match.getId());
+		this.logger.trace("Les cartes du match {} de  à {} a été généré",
+			match.getId(),
+			match.getCardList().get(0).getId(),
+			match.getCardList().get(match.getCardList().size() - 1).getId());
 	}
 
 	@PostMapping("/play")
-	private void playCard(@RequestBody Card cardRequest) throws Exception {
+	private void playCard(@RequestBody Card cardRequest) {
 		User user = this.daoUser.getById(this.userSession.getId());
 		Match match = this.daoMatch.findById(user.getCurrentMatch().getId()).orElseThrow(MatchNotFoundException::new);
 		Card card = this.daoCard.findById(cardRequest.getId()).orElseThrow(CardNotFoundException::new);
 		
 		if (match.getState() != MatchState.PLAYING) {throw new MatchNotPlayingException();}
-		
 		if (user.getId() != match.getCurrentPlayer().getId()) {throw new PlayerNotYourTurnException();}
-		
-		if (card.getOwner().getId() == match.getLastPlayer().getId()) {throw new Exception();}
-		if (card.getOwner().getId() == match.getCurrentPlayer().getId()) {throw new Exception();}
-		if (card.getState() != CardState.HIDDEN) {throw new Exception();}
+		if (card.getOwner().getId() == match.getLastPlayer().getId()) {throw new LastPlayerCardException();}
+		if (card.getOwner().getId() == match.getCurrentPlayer().getId()) {throw new CurrentPlayerCardException();}
+		if (card.getState() != CardState.HIDDEN) {throw new CardAlreadyRevealedException();}
 		
 		card.setState(CardState.REVEALED);
-		this.logger.trace("La carte révélée par le joueur " + user.getPseudo() + " était une carte " + card.getType() );
+		this.logger.trace("La carte révélée par le joueur {} était une carte {}",
+				user.getPseudo(),
+				card.getType());
 		match.setLastPlayer(match.getCurrentPlayer());
 		match.setCurrentPlayer(card.getOwner());
 		
 		switch (card.getType()) {
 			case DIFFUSE:
-				if (!matchService.isDefuseLeft(match)) {
-					match.setWinnerRole(PlayerRole.SHERLOCK);
-					match.setState(MatchState.TERMINATED);
-					match = matchService.revealAllCards(match);
-					break;
-				}
+				match = this.matchService.switchDiffuseCase(match);
+				break;
 			case BAIT:
-				if (matchService.isMatchOver(match)) {
-					match.setWinnerRole(PlayerRole.MORIARTY);
-					match.setState(MatchState.TERMINATED);
-					match = matchService.revealAllCards(match);
-					this.logger.trace("Le match est terminé");
-					break;
-				}
-				if(matchService.isRoundOver(match)) {
-					match = matchService.distributeCards(match);
-				}
+				match = this.matchService.switchBaitCase(match);
 				break;
 			case BOMB:
-				match.setWinnerRole(PlayerRole.MORIARTY);
-				match.setState(MatchState.TERMINATED);
-				match = matchService.revealAllCards(match);
+				match = this.matchService.switchBombCase(match);
 				break;
+			default:
+				throw new TransactionErrorException();
 		}
 		
 		this.daoMatch.save(match);
 	}
+
 
 }

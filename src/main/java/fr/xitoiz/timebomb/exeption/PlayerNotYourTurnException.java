@@ -6,12 +6,5 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(code = HttpStatus.FORBIDDEN, reason = "PLAYER NOT YOUR TURN")
 public class PlayerNotYourTurnException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
-	
-	public PlayerNotYourTurnException() {
-		System.out.println("Error returned : PLAYER NOT YOUR TURN");
-	}
-	
-	public PlayerNotYourTurnException(String reason) {
-		System.out.println(reason);
-	}
+
 }

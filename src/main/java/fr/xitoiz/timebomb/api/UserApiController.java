@@ -36,7 +36,9 @@ public class UserApiController {
     @PostMapping("/inscription")
     private void inscription(@Valid @RequestBody User user) {
     	Optional<User> dbUser = this.daoUser.findByLogin(user.getLogin());
-    	if (!dbUser.isEmpty()) { throw new LoginAlreadyUsedException(); }
+    	if (!dbUser.isEmpty()) {
+    		throw new LoginAlreadyUsedException();
+    	}
     	
     	user.setPassword(this.passwordEncoder.encode(user.getPassword()));
     	
@@ -49,7 +51,7 @@ public class UserApiController {
     
 	@PostMapping("/login")
 	private User login(@RequestBody User user) {
-		User dbUser = this.daoUser.findByLogin(user.getLogin()).orElseThrow(() -> new UserNotFoundException());
+		User dbUser = this.daoUser.findByLogin(user.getLogin()).orElseThrow(UserNotFoundException::new);
 		if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {
 			throw new UserNotFoundException();
 		}

@@ -6,8 +6,5 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(code = HttpStatus.FORBIDDEN, reason = "PLAYER ALREADY IN A MATCH")
 public class PlayerInAMatchException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
-	
-	public PlayerInAMatchException() {
-		System.out.println("Error returned : PLAYER ALREADY IN A MATCH");
-	}
+
 }

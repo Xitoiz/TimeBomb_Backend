@@ -25,7 +25,7 @@ public class Card {
     @Column(name = "CARD_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@JsonView(Views.Common.class)
-	private Integer id;
+	private int id;
 	
 	@ManyToOne
 	@JoinColumn(name = "CARD_MATCH_ID")
