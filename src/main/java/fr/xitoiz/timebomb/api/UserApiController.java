@@ -36,7 +36,6 @@ public class UserApiController {
     @PostMapping("/inscription")
     private void inscription(@Valid @RequestBody User user) {
     	Optional<User> dbUser = this.daoUser.findByLogin(user.getLogin());
-    	
     	if (!dbUser.isEmpty()) { throw new LoginAlreadyUsedException(); }
     	
     	user.setPassword(this.passwordEncoder.encode(user.getPassword()));

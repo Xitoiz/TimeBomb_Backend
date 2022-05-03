@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+timebomb.log
+
+timebomb.log.2022-05-02.0.gz

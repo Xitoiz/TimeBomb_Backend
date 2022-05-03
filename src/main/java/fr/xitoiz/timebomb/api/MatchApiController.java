@@ -6,6 +6,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +34,7 @@ import fr.xitoiz.timebomb.exeption.PlayerInAMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotInAMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotInThisMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotYourTurnException;
-import fr.xitoiz.timebomb.exeption.TransactionErrorException;
+import fr.xitoiz.timebomb.exeption.UserNotFoundException;
 import fr.xitoiz.timebomb.models.Card;
 import fr.xitoiz.timebomb.models.Match;
 import fr.xitoiz.timebomb.models.User;
@@ -44,7 +46,7 @@ import fr.xitoiz.timebomb.services.UserSession;
 @CrossOrigin("*")
 @RequestMapping("/api/v1/match")
 public class MatchApiController {
-		
+	
 	@Autowired
 	private IDAOMatch daoMatch;
 	
@@ -59,16 +61,29 @@ public class MatchApiController {
 	
 	private final MatchService matchService;
 	
+	private final Logger logger;
+	
 	public MatchApiController() {
 		this.userSession = new UserSession();
+		this.logger = LoggerFactory.getLogger(MatchApiController.class);
 		this.matchService = new MatchService();
 	}
 	
 	@GetMapping("/mine")
 	@JsonView(Views.Match.class)
 	private Match getMatch() {
-		User user = this.daoUser.getById(this.userSession.getId());
-		return this.daoMatch.findById(user.getCurrentMatch().getId()).orElseThrow(PlayerNotInAMatchException::new);
+		User user = this.daoUser.findById(this.userSession.getId()).orElseThrow(UserNotFoundException::new);
+		this.logger.trace("Le user {}-{} a demandé son match ...", user.getId(), user.getPseudo());
+		
+		if (user.getCurrentMatch() == null) {
+			this.logger.trace("Le user {}-{} n'est dans aucun match !", user.getId(), user.getPseudo());
+			throw new PlayerNotInAMatchException();
+			}
+		
+		Match match = this.daoMatch.findById(user.getCurrentMatch().getId()).orElseThrow(MatchNotFoundException::new);
+		this.logger.trace("Le user {}-{} a récupéré son match", user.getId(), user.getPseudo());
+		
+		return match;
 	}
 	
 	@GetMapping("/admin")
@@ -88,8 +103,7 @@ public class MatchApiController {
 		user.setCurrentMatch(match);
 		
 		this.daoMatch.save(match);
-		System.out.println("Le match d'id " + match.getId() + " a été créé à la demande de " + user.getId() + " - " + user.getPseudo() + ".");
-		
+		this.logger.trace("Le match d'id " + match.getId() + " a été créé à la demande de (" + user.getId() + ")" + user.getPseudo() + ".");
 		return match;
 	}
 	
@@ -104,7 +118,7 @@ public class MatchApiController {
 		user.setCurrentMatch(match);
 		this.daoUser.save(user);
 		
-		System.out.println("Le user " + user.getId() + "-" + user.getPseudo() + " a rejoint le match " + match.getId());
+		this.logger.trace("Le user " + user.getId() + "-" + user.getPseudo() + " a rejoint le match " + match.getId());
 	}
 	
 	@PostMapping("/leave")
@@ -119,22 +133,23 @@ public class MatchApiController {
 		user.setCurrentMatch(null);
 		this.daoUser.save(user);
 		
-		System.out.println("Le user " + user.getId() + "-" + user.getPseudo() + " a quitté le match " + match.getId());	
+		this.logger.trace("Le user " + user.getId() + "-" + user.getPseudo() + " a quitté le match " + match.getId());	
 		
 		if (match.getPlayerList().size() == 0) {
 			switch (match.getState()) {
 				case TERMINATED:
 					this.daoCard.clearMatch(match.getId());
-					System.out.println("Les cartes du match " + match.getId() + " ont été clear.");
+					this.logger.trace("Les cartes du match " + match.getId() + " ont été clear.");
 					this.daoCard.deleteCardMatch(match.getId());
-					System.out.println("Les cartes du match " + match.getId() + " ont été supprimées.");
+					this.logger.trace("Les cartes du match " + match.getId() + " ont été supprimées.");
+					break;
 				case PENDING:
 					this.daoMatch.deleteById(match.getId());
-					System.out.println("Le match " + match.getId() + " a été effacé.");
+					this.logger.trace("Le match " + match.getId() + " a été effacé.");
 					break;
-			default:
-				System.out.println("Erreur switch");
-				throw new TransactionErrorException();
+				case PLAYING:
+					this.logger.trace("Erreur switch");
+					throw new MatchNotLeavableException();
 			}
 		}
 	}
@@ -160,8 +175,8 @@ public class MatchApiController {
 		this.daoCard.saveAll(match.getCardList());
 		this.daoMatch.save(match);
 				
-		System.out.println("Le match " + match.getId() + " a été généré.");
-		System.out.println("Les cartes du match "  + match.getId() + " de "+ match.getCardList().get(0).getId() + " à " + match.getCardList().get(match.getCardList().size() - 1).getId() + " a été généré.");
+		this.logger.trace("Le match " + match.getId() + " a été généré.");
+		this.logger.trace("Les cartes du match "  + match.getId() + " de "+ match.getCardList().get(0).getId() + " à " + match.getCardList().get(match.getCardList().size() - 1).getId() + " a été généré.");
 	}
 
 	@PostMapping("/play")
@@ -179,7 +194,7 @@ public class MatchApiController {
 		if (card.getState() != CardState.HIDDEN) {throw new Exception();}
 		
 		card.setState(CardState.REVEALED);
-		System.out.println("La carte révélée par le joueur " + user.getPseudo() + " était une carte " + card.getType() );
+		this.logger.trace("La carte révélée par le joueur " + user.getPseudo() + " était une carte " + card.getType() );
 		match.setLastPlayer(match.getCurrentPlayer());
 		match.setCurrentPlayer(card.getOwner());
 		
@@ -196,7 +211,7 @@ public class MatchApiController {
 					match.setWinnerRole(PlayerRole.MORIARTY);
 					match.setState(MatchState.TERMINATED);
 					match = matchService.revealAllCards(match);
-					System.out.println("Le match est terminé");
+					this.logger.trace("Le match est terminé");
 					break;
 				}
 				if(matchService.isRoundOver(match)) {
