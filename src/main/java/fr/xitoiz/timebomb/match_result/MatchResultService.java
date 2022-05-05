@@ -14,7 +14,6 @@ public class MatchResultService {
 	@Autowired
 	private MatchResultDAO daoMatchResult;
 	
-	@JsonView(Views.Match.class)
 	public void save(Match match, String winCondition) {
 		MatchResult matchResult = new MatchResult(match, winCondition);
 		
