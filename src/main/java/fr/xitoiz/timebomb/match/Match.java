@@ -47,7 +47,7 @@ public class Match {
 	private List<Card> cardList;
 	
 	@OneToMany(mappedBy = "currentMatch")
-	@JsonView(Views.Match.class)
+	@JsonView(Views.MatchSummary.class)
 	private List<User> playerList;
 	
 	@OneToOne

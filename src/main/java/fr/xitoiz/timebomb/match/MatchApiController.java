@@ -33,29 +33,30 @@ public class MatchApiController {
 	@Autowired
 	public MatchService matchService;
 	
+	@Autowired
+	private MatchDAO daoMatch;
 	
-	@GetMapping("/mine")
-	@JsonView(Views.Match.class)
-	public Match getMatch() {
-		return this.matchService.getMatch();
+	@GetMapping
+	@JsonView(Views.MatchSummary.class)
+	public List<Match> getAllMatch() {
+		return this.daoMatch.findAll();
 	}
 	
 	@GetMapping("/pending")
-	@JsonView(Views.Match.class)
+	@JsonView(Views.MatchSummary.class)
 	public List<Match> getAllPendingMatch() {
-		return this.matchService.getPendingMatch();
+		return this.matchService.getAllPendingMatch();
 	}
 	
 	@GetMapping("/playing")
-	@JsonView(Views.Match.class)
+	@JsonView(Views.MatchSummary.class)
 	public List<Match> getAllPlayingMatch() {
-		return this.matchService.getPlayingMatch();
+		return this.matchService.getAllPlayingMatch();
 	}
 	
 	@PostMapping("/create")
-	@JsonView(Views.Match.class)
-	public Match createMatch(@Valid @RequestBody Match match) {
-		return this.matchService.createMatch(match);
+	public void createMatch(@Valid @RequestBody Match match) {
+		this.matchService.createMatch(match);
 	}
 	
 	@PostMapping("/join")

@@ -38,7 +38,7 @@ public class Card {
 	@JoinColumn(name = "CARD_OWNER_ID")
 	@JsonView({
 		Views.Card.class,
-		Views.MatchAdmin.class
+		Views.Match.class
 	})
 	private User owner;
 	

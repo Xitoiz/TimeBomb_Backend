@@ -40,7 +40,7 @@ public class User {
 	
     @Column(name = "USER_SYSTEM_ROLE")
     @Enumerated(EnumType.STRING)
-    @JsonView(Views.Common.class)
+    @JsonView(Views.User.class)
     private AccountType accountType;
     
     @ManyToOne
@@ -50,7 +50,7 @@ public class User {
 	
     @Column(name = "USER_MATCH_ROLE")
     @Enumerated(EnumType.STRING)
-    @JsonView(Views.Common.class)
+    @JsonView(Views.User.class)
 	private PlayerRole playerRole;
 
     

@@ -1,5 +1,6 @@
 package fr.xitoiz.timebomb.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -7,14 +8,18 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import fr.xitoiz.timebomb.exeption.LoginAlreadyUsedException;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
 import fr.xitoiz.timebomb.exeption.UserNotFoundException;
+import fr.xitoiz.timebomb.projection.Views;
 
 @RestController
 @CrossOrigin("*")
@@ -60,4 +65,9 @@ public class UserApiController {
 		return dbUser;
 	}
 	
+	@GetMapping
+	@JsonView(Views.User.class)
+	private List<User> getAllUser() {
+		return this.daoUser.findAll();
+	}
 }

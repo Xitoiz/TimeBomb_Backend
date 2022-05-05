@@ -32,7 +32,6 @@ import fr.xitoiz.timebomb.exeption.PlayerNotInAMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotInThisMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotYourTurnException;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
-import fr.xitoiz.timebomb.exeption.UserNotFoundException;
 import fr.xitoiz.timebomb.match_result.MatchResultService;
 import fr.xitoiz.timebomb.user.User;
 import fr.xitoiz.timebomb.user.UserDAO;
@@ -63,32 +62,10 @@ public class MatchService {
 	
 	@Autowired
 	private MatchResultService matchResultService;
-	
-	
-	//@GetMapping("/mine")
-	public Match getMatch() {
-		User user = this.daoUser.findById(this.userSession.getId()).orElseThrow(UserNotFoundException::new);
-		this.logger.trace("Le user ({}){} a demandé son match ...",
-				user.getId(),
-				user.getPseudo());
-		
-		if (user.getCurrentMatch() == null) {
-			this.logger.trace("Le user ({}){} n'est dans aucun match !",
-					user.getId(),
-					user.getPseudo());
-			throw new PlayerNotInAMatchException();
-		}
-		
-		Match match = this.daoMatch.findById(user.getCurrentMatch().getId()).orElseThrow(MatchNotFoundException::new);
-		this.logger.trace("Le user ({}){} a récupéré son match",
-				user.getId(),
-				user.getPseudo());
-		
-		return match;
-	}
+
 	
 	//@GetMapping("/pending")
-	public List<Match> getPendingMatch() {
+	public List<Match> getAllPendingMatch() {
 		User user = this.daoUser.getById(this.userSession.getId());
 		this.logger.trace("Le user ({}){} a demandé les matchs en attentes ...",
 				user.getId(),
@@ -98,7 +75,7 @@ public class MatchService {
 	}
 	
 	//@GetMapping("/playing")
-	public List<Match> getPlayingMatch() {
+	public List<Match> getAllPlayingMatch() {
 		User user = this.daoUser.getById(this.userSession.getId());
 		this.logger.trace("Le user ({}){} a demandé les matchs en cours ...",
 				user.getId(),
@@ -236,7 +213,7 @@ public class MatchService {
 		
 		this.daoMatch.save(match);
 	}
-	
+
 	
 	private Match generatePlayerRole(Match match) {
 		List<User> listOfPlayer = match.getPlayerList();

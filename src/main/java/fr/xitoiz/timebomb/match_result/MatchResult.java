@@ -37,12 +37,12 @@ public class MatchResult {
 	
 	@ManyToMany
 	@Column(name = "MATCH_WINNERS")
-	@JsonView(Views.Match.class)
+	@JsonView(Views.MatchSummary.class)
 	private List<User> winners = new ArrayList<>();
 	
 	@ManyToMany
 	@Column(name = "MATCH_LOOSERS")
-	@JsonView(Views.Match.class)
+	@JsonView(Views.MatchSummary.class)
 	private List<User> loosers = new ArrayList<>();
 	
 	@Column(name = "MATCH_WIN_CONDITION", length = 250)
