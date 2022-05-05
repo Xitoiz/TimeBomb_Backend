@@ -1,4 +1,4 @@
-package fr.xitoiz.timebomb.api;
+package fr.xitoiz.timebomb.user;
 
 import java.util.Optional;
 
@@ -12,12 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.xitoiz.timebomb.dao.IDAOUser;
 import fr.xitoiz.timebomb.exeption.LoginAlreadyUsedException;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
 import fr.xitoiz.timebomb.exeption.UserNotFoundException;
-import fr.xitoiz.timebomb.models.User;
-import fr.xitoiz.timebomb.services.UserSession;
 
 @RestController
 @CrossOrigin("*")
@@ -25,7 +22,7 @@ import fr.xitoiz.timebomb.services.UserSession;
 public class UserApiController {
 	
     @Autowired
-    private IDAOUser daoUser;
+    private UserDAO daoUser;
     
 	@Autowired
 	private PasswordEncoder passwordEncoder;

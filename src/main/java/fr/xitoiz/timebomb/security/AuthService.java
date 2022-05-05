@@ -6,14 +6,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import fr.xitoiz.timebomb.dao.IDAOUser;
-import fr.xitoiz.timebomb.models.User;
-import fr.xitoiz.timebomb.services.UserSession;
+import fr.xitoiz.timebomb.user.UserDAO;
+import fr.xitoiz.timebomb.user.User;
+import fr.xitoiz.timebomb.user.UserSession;
 
 @Service
 public class AuthService implements UserDetailsService {
 	@Autowired
-	private IDAOUser daoUser;
+	private UserDAO daoUser;
 
 	@Autowired
 	private UserSession userSession;
