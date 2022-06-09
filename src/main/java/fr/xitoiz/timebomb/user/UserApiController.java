@@ -52,6 +52,7 @@ public class UserApiController {
     }
     
 	@PostMapping("/login")
+	@JsonView(Views.User.class)
 	private User login(@RequestBody User user) {
 		User dbUser = this.daoUser.findByLogin(user.getLogin()).orElseThrow(UserNotFoundException::new);
 		if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {

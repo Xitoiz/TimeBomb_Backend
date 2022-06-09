@@ -7,8 +7,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
@@ -26,7 +24,6 @@ public class MatchResult {
 
 	@Id
     @Column(name = "MATCH_ID")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@JsonView(Views.Common.class)
 	private int id;
 	
@@ -50,9 +47,10 @@ public class MatchResult {
 	private String winCondition;
 
 	public MatchResult(Match match, String winCondition) {
+		this.id = match.getId();
 		this.winnerRole = match.getWinnerRole();
 		this.winCondition = winCondition;
-		this.addWinners(match);
+		this.addPlayerToLists(match);
 	}
 
 	public MatchResult(int id, PlayerRole winnerRole, List<User> winners, List<User> loosers, String winCondition) {
@@ -65,7 +63,7 @@ public class MatchResult {
 
 	public MatchResult() {}
 
-	private void addWinners(Match match) {
+	private void addPlayerToLists(Match match) {
 		for (User player: match.getPlayerList()) {
 			if (player.getPlayerRole() == match.getWinnerRole()) {
 				this.winners.add(player);

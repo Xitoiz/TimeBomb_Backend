@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import fr.xitoiz.timebomb.card.Card;
 import fr.xitoiz.timebomb.card.CardDAO;
 import fr.xitoiz.timebomb.card.CardService;
+import fr.xitoiz.timebomb.emitter.MatchEmitterService;
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.CardType;
 import fr.xitoiz.timebomb.enums.MatchState;
@@ -63,9 +65,13 @@ public class MatchService {
 	@Autowired
 	private MatchResultService matchResultService;
 
+	//@GetMapping
+	public List<Match> findAllMatch() {
+		return this.daoMatch.findAll();
+	}
 	
 	//@GetMapping("/pending")
-	public List<Match> getAllPendingMatch() {
+	public List<Match> findAllPendingMatch() {
 		User user = this.daoUser.getById(this.userSession.getId());
 		this.logger.trace("Le user ({}){} a demandé les matchs en attentes ...",
 				user.getId(),
@@ -75,7 +81,7 @@ public class MatchService {
 	}
 	
 	//@GetMapping("/playing")
-	public List<Match> getAllPlayingMatch() {
+	public List<Match> findAllPlayingMatch() {
 		User user = this.daoUser.getById(this.userSession.getId());
 		this.logger.trace("Le user ({}){} a demandé les matchs en cours ...",
 				user.getId(),
@@ -141,6 +147,8 @@ public class MatchService {
 					this.logger.trace("Les cartes du match {} ont été clear", match.getId());
 					this.daoCard.deleteCardMatch(match.getId());
 					this.logger.trace("Les cartes du match {} ont été supprimées", match.getId());
+					this.daoMatch.delete(match);
+					this.logger.trace("Le match {} a été supprimé", match.getId());
 					break;
 				case PENDING:
 					this.daoMatch.deleteById(match.getId());

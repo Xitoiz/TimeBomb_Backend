@@ -33,29 +33,27 @@ public class MatchApiController {
 	@Autowired
 	public MatchService matchService;
 	
-	@Autowired
-	private MatchDAO daoMatch;
-	
 	@GetMapping
 	@JsonView(Views.MatchSummary.class)
-	public List<Match> getAllMatch() {
-		return this.daoMatch.findAll();
+	public List<Match> findAllMatch() {
+		return this.matchService.findAllMatch();
 	}
 	
 	@GetMapping("/pending")
 	@JsonView(Views.MatchSummary.class)
-	public List<Match> getAllPendingMatch() {
-		return this.matchService.getAllPendingMatch();
+	public List<Match> findAllPendingMatch() {
+		return this.matchService.findAllPendingMatch();
 	}
 	
 	@GetMapping("/playing")
 	@JsonView(Views.MatchSummary.class)
-	public List<Match> getAllPlayingMatch() {
-		return this.matchService.getAllPlayingMatch();
+	public List<Match> findAllPlayingMatch() {
+		return this.matchService.findAllPlayingMatch();
 	}
 	
 	@PostMapping("/create")
 	public void createMatch(@Valid @RequestBody Match match) {
+		System.out.println(match.getName());
 		this.matchService.createMatch(match);
 	}
 	

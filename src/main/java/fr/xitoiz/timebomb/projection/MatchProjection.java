@@ -29,7 +29,7 @@ public class MatchProjection {
 		this.match = match;
 		this.matchRole = user.getPlayerRole();
 		this.getHandResume(match, user);
-		if (user.getAccountType() == AccountType.PLAYER) {this.cleanCard(match);}
+		if (user.getAccountType() != AccountType.ADMIN) {this.cleanCard(match);}
 	}
 	
 	public MatchProjection(Match match) {
