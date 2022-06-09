@@ -1,4 +1,4 @@
-package fr.xitoiz.timebomb.services;
+package fr.xitoiz.timebomb.user;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.SessionScope;

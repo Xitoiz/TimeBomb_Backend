@@ -24,7 +24,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
 			.antMatchers(HttpMethod.OPTIONS).permitAll()
-			.antMatchers("**").permitAll()//hasRole("ADMIN")
+			.antMatchers("/api/v1/resultats/**").permitAll()
+			.antMatchers("/api/v1/user/**").permitAll()
+			.antMatchers("/api/v1/match/**").hasAnyRole("ADMIN", "PLAYER")
+			.antMatchers("/api/v1/admin/**").hasRole("ADMIN")
+			.antMatchers("**").denyAll()
 			.and().httpBasic()
 			.and().csrf().disable();
 	}

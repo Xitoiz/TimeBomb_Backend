@@ -1,4 +1,4 @@
-package fr.xitoiz.timebomb.dao;
+package fr.xitoiz.timebomb.card;
 
 import java.util.List;
 
@@ -8,10 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.xitoiz.timebomb.models.Card;
-import fr.xitoiz.timebomb.models.Match;
+import fr.xitoiz.timebomb.match.Match;
 
-public interface IDAOCard extends JpaRepository<Card, Integer> {
+public interface CardDAO extends JpaRepository<Card, Integer> {
 	
 	@Modifying
 	@Transactional

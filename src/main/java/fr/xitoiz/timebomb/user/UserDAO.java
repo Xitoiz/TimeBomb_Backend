@@ -1,12 +1,10 @@
-package fr.xitoiz.timebomb.dao;
+package fr.xitoiz.timebomb.user;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.xitoiz.timebomb.models.User;
-
-public interface IDAOUser extends JpaRepository<User, Integer> {
+public interface UserDAO extends JpaRepository<User, Integer> {
 	
 	public Optional<User> findByLogin(String username);
 

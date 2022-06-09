@@ -1,4 +1,4 @@
-package fr.xitoiz.timebomb.models;
+package fr.xitoiz.timebomb.user;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import fr.xitoiz.timebomb.enums.AccountType;
 import fr.xitoiz.timebomb.enums.PlayerRole;
+import fr.xitoiz.timebomb.match.Match;
 import fr.xitoiz.timebomb.projection.Views;
 
 @Entity
@@ -39,7 +40,7 @@ public class User {
 	
     @Column(name = "USER_SYSTEM_ROLE")
     @Enumerated(EnumType.STRING)
-    @JsonView(Views.Common.class)
+    @JsonView(Views.User.class)
     private AccountType accountType;
     
     @ManyToOne
@@ -49,7 +50,7 @@ public class User {
 	
     @Column(name = "USER_MATCH_ROLE")
     @Enumerated(EnumType.STRING)
-    @JsonView(Views.Common.class)
+    @JsonView(Views.User.class)
 	private PlayerRole playerRole;
 
     

@@ -1,4 +1,4 @@
-package fr.xitoiz.timebomb.models;
+package fr.xitoiz.timebomb.card;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,8 +14,10 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import fr.xitoiz.timebomb.projection.Views;
+import fr.xitoiz.timebomb.user.User;
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.CardType;
+import fr.xitoiz.timebomb.match.Match;
 
 @Entity
 @Table(name = "CARD")
@@ -36,7 +38,7 @@ public class Card {
 	@JoinColumn(name = "CARD_OWNER_ID")
 	@JsonView({
 		Views.Card.class,
-		Views.MatchAdmin.class
+		Views.Match.class
 	})
 	private User owner;
 	
