@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import fr.xitoiz.timebomb.card.Card;
 import fr.xitoiz.timebomb.card.CardDAO;
 import fr.xitoiz.timebomb.card.CardService;
+import fr.xitoiz.timebomb.emitter.MatchEmitterService;
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.CardType;
 import fr.xitoiz.timebomb.enums.MatchState;
@@ -32,6 +34,7 @@ import fr.xitoiz.timebomb.exeption.PlayerNotInAMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotInThisMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotYourTurnException;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
+import fr.xitoiz.timebomb.exeption.UserNotFoundException;
 import fr.xitoiz.timebomb.match_result.MatchResultService;
 import fr.xitoiz.timebomb.user.User;
 import fr.xitoiz.timebomb.user.UserDAO;
@@ -62,6 +65,9 @@ public class MatchService {
 	
 	@Autowired
 	private MatchResultService matchResultService;
+	
+	@Autowired
+	private MatchEmitterService srvEmitter;
 
 	//@GetMapping
 	public List<Match> findAllMatch() {
@@ -220,6 +226,22 @@ public class MatchService {
 		this.daoMatch.save(match);
 	}
 
+	//@GetMapping("/sse-stream")
+	public SseEmitter stream() {
+		this.logger.debug("Un abonnement au flux a été demandé ...");
+		
+		User player = this.daoUser.findById(this.userSession.getId()).orElseThrow(UserNotFoundException::new);
+		
+		if (player.getCurrentMatch() == null) {
+			this.logger.debug("Un abonnement au flux général a été demandé par le joueur {}", player.getId());
+			return this.srvEmitter.create(player.getId());
+		}
+
+		this.logger.debug("Un abonnement au flux a été demandé par le joueur {} pour le match {}", player.getId(), player.getCurrentMatch().getId());
+		
+		return this.srvEmitter.create(player.getId(), player.getCurrentMatch().getId());
+	}
+	
 	
 	private Match generatePlayerRole(Match match) {
 		List<User> listOfPlayer = match.getPlayerList();
