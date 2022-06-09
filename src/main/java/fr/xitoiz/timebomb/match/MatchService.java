@@ -10,12 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import fr.xitoiz.timebomb.card.Card;
 import fr.xitoiz.timebomb.card.CardDAO;
 import fr.xitoiz.timebomb.card.CardService;
-import fr.xitoiz.timebomb.emitter.MatchEmitterService;
 import fr.xitoiz.timebomb.enums.CardState;
 import fr.xitoiz.timebomb.enums.CardType;
 import fr.xitoiz.timebomb.enums.MatchState;
