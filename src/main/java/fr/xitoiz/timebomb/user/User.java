@@ -22,6 +22,7 @@ import fr.xitoiz.timebomb.projection.Views;
 @Table(name = "USER")
 public class User {
 
+// ----- Parameters ----- //
     @Id
     @Column(name = "USER_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,8 +53,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @JsonView(Views.User.class)
 	private PlayerRole playerRole;
-
+// ----- Parameters ----- //
+ 
     
+// ----- Constructors ----- // 
 	public User(Integer id, String pseudo, String login, String password, Match currentMatch, PlayerRole playerRole, AccountType accountType) {
 		this.id = id;
 		this.pseudo = pseudo;
@@ -66,8 +69,11 @@ public class User {
 	
 	public User() {
 	}
-
+// ----- Constructors ----- // 
 	
+	
+	
+// ----- Getters & Setters ----- // 
 	public int getId() {
 		return this.id;
 	}
@@ -123,4 +129,6 @@ public class User {
 	public void setAccountType(AccountType accountType) {
 		this.accountType = accountType;
 	}
+// ----- Getters & Setters ----- // 
+
 }

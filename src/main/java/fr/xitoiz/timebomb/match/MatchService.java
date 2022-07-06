@@ -1,10 +1,6 @@
 package fr.xitoiz.timebomb.match;
 
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +11,6 @@ import fr.xitoiz.timebomb.card.Card;
 import fr.xitoiz.timebomb.card.CardDAO;
 import fr.xitoiz.timebomb.card.CardService;
 import fr.xitoiz.timebomb.enums.CardState;
-import fr.xitoiz.timebomb.enums.CardType;
 import fr.xitoiz.timebomb.enums.MatchState;
 import fr.xitoiz.timebomb.enums.PlayerRole;
 import fr.xitoiz.timebomb.exeption.CardAlreadyRevealedException;
@@ -43,7 +38,7 @@ public class MatchService {
 	private MatchService() {
 	}
 	
-	private final Logger logger  = LoggerFactory.getLogger(MatchService.class);
+	private final Logger logger = LoggerFactory.getLogger(MatchService.class);
 	
 	@Autowired
 	private MatchDAO daoMatch;
@@ -170,9 +165,7 @@ public class MatchService {
 		this.cardService.generateCard(match);
 		this.cardService.distributeCards(match);
 		
-		this.generatePlayerRole(match);
-		this.generateFirstPlayer(match);
-		
+		match.generatePlayerRole().generateFirstPlayer();
 		match.setState(MatchState.PLAYING);
 		
 		this.daoMatch.save(match);
@@ -219,103 +212,29 @@ public class MatchService {
 		
 		this.daoMatch.save(match);
 	}
-
 	
-	private Match generatePlayerRole(Match match) {
-		List<User> listOfPlayer = match.getPlayerList();
-		ArrayList<PlayerRole> listOfPlayerRole = new ArrayList<>();
-		
-		listOfPlayerRole.add(PlayerRole.MORIARTY);
-		listOfPlayerRole.add(PlayerRole.MORIARTY);
-		listOfPlayerRole.add(PlayerRole.SHERLOCK);
-		listOfPlayerRole.add(PlayerRole.SHERLOCK);
-		listOfPlayerRole.add(PlayerRole.SHERLOCK);
-		
-		if (listOfPlayer.size() > 5) {
-			listOfPlayerRole.add(PlayerRole.SHERLOCK);
-			if (listOfPlayer.size() > 6) {
-				listOfPlayerRole.add(PlayerRole.MORIARTY);
-				listOfPlayerRole.add(PlayerRole.SHERLOCK);
-			}
-		}
-				
-		Collections.shuffle(listOfPlayerRole);
-		
-		for (int i = 0; i < listOfPlayer.size(); i++) {
-			listOfPlayer.get(i).setRole(listOfPlayerRole.get(i));
-		}
-		
-		return match;
-	}
-	
-	private void generateFirstPlayer(Match match) {
-		Random rand = new SecureRandom();
-		int randomNum = rand.nextInt(match.getPlayerList().size());
-		
-		match.setCurrentPlayer(match.getPlayerList().get(randomNum));
-		match.setLastPlayer(match.getPlayerList().get(randomNum));
-	}
-	
-	
-	private boolean isDefuseLeft(Match match) {
-		List<Card> listOfCard = match.getCardList();
-		
-		for (Card card: listOfCard) {
-			if (card.getType() == CardType.DIFFUSE && card.getState() == CardState.HIDDEN) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean isRoundOver(Match match) {
-		List<Card> listOfCard = match.getCardList();
-		int nbCardRevealedThisTurn = 0;
-		int nbPlayer = match.getPlayerList().size();
-		
-		for (Card card: listOfCard) {
-			if (card.getOwner() != null && card.getState() == CardState.REVEALED) {
-				nbCardRevealedThisTurn = nbCardRevealedThisTurn + 1;
-			}
-		}
-		return nbCardRevealedThisTurn == nbPlayer;
-	}
-
-	private boolean isMatchOver(Match match) {
-		List<Card> listOfCard = match.getCardList();
-		int nbCardHidden = 0;
-		int nbPlayer = match.getPlayerList().size();
-		
-		for (Card card: listOfCard) {
-			if (card.getState() == CardState.HIDDEN) {
-				nbCardHidden = nbCardHidden + 1;
-			}
-		}
-		return nbCardHidden == nbPlayer;
-	}
-
 	
 	private void switchDiffuseCase(Match match) {
-		if (!isDefuseLeft(match)) {
+		if (!match.isDefuseLeft()) {
 			this.logger.trace("Le match est terminé. La team Sherlock a gagné en désamorçant la bombe");
 			this.endMatch(match, PlayerRole.SHERLOCK, "Bombe Désamorcée");
 			
 		}
-		if (isMatchOver(match)) {
+		if (match.isMatchOver()) {
 			this.logger.trace("Le match est terminé. La team Sherlock n'a pas désamorcé la bombe");
 			this.endMatch(match, PlayerRole.MORIARTY, "Temps écoulé");
 		}
-		if(isRoundOver(match)) {
+		if(match.isRoundOver()) {
 			this.cardService.distributeCards(match);
 		}
 	}
 
 	private void switchBaitCase(Match match) {
-		if (isMatchOver(match)) {
+		if (match.isMatchOver()) {
 			this.logger.trace("Le match est terminé. La team Sherlock n'a pas désamorcé la bombe");
 			this.endMatch(match, PlayerRole.MORIARTY, "Temps écoulé");
 		}
-		if(isRoundOver(match)) {
+		if(match.isRoundOver()) {
 			this.cardService.distributeCards(match);
 		}
 	}

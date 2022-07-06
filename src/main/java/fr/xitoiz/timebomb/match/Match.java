@@ -1,7 +1,10 @@
 package fr.xitoiz.timebomb.match;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,6 +21,8 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import fr.xitoiz.timebomb.card.Card;
+import fr.xitoiz.timebomb.enums.CardState;
+import fr.xitoiz.timebomb.enums.CardType;
 import fr.xitoiz.timebomb.enums.MatchState;
 import fr.xitoiz.timebomb.enums.PlayerRole;
 import fr.xitoiz.timebomb.projection.Views;
@@ -27,6 +32,7 @@ import fr.xitoiz.timebomb.user.User;
 @Table(name = "[MATCH]") // (name = "MATCH") est interdit par MySQL
 public class Match {
 
+// ----- Parameters ----- //
 	@Id
     @Column(name = "MATCH_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,8 +70,10 @@ public class Match {
 	@Enumerated(EnumType.STRING)
 	@JsonView(Views.Common.class)
 	private PlayerRole winnerRole;
+// ----- Parameters ----- //	
+
 	
-	
+// ----- Constructor ----- //
 	public Match(String name, MatchState state, List<Card> cardList, List<User> playerList, User lastPlayer,
 			User currentPlayer, PlayerRole winnerRole) {
 		this.name = name;
@@ -79,8 +87,10 @@ public class Match {
 
 	public Match() {
 	}
+// ----- Constructor ----- //
 
 	
+// ----- Getter & Setter ----- //
 	public int getId() {
 		return id;
 	}
@@ -149,5 +159,81 @@ public class Match {
 	public void setWinnerRole(PlayerRole winnerRole) {
 		this.winnerRole = winnerRole;
 	}
+// ----- Getter & Setter ----- //
+	
+	
+// ----- Methods ----- //
+	public Match generatePlayerRole() {
+		List<User> listOfPlayer = this.getPlayerList();
+		ArrayList<PlayerRole> listOfPlayerRole = new ArrayList<>();
+		
+		listOfPlayerRole.add(PlayerRole.MORIARTY);
+		listOfPlayerRole.add(PlayerRole.MORIARTY);
+		listOfPlayerRole.add(PlayerRole.SHERLOCK);
+		listOfPlayerRole.add(PlayerRole.SHERLOCK);
+		listOfPlayerRole.add(PlayerRole.SHERLOCK);
+		
+		if (listOfPlayer.size() > 5) {
+			listOfPlayerRole.add(PlayerRole.SHERLOCK);
+			if (listOfPlayer.size() > 6) {
+				listOfPlayerRole.add(PlayerRole.MORIARTY);
+				listOfPlayerRole.add(PlayerRole.SHERLOCK);
+			}
+		}
+				
+		Collections.shuffle(listOfPlayerRole);
+		
+		for (int i = 0; i < listOfPlayer.size(); i++) {
+			listOfPlayer.get(i).setRole(listOfPlayerRole.get(i));
+		}
+		
+		return this;
+	}
+
+	public void generateFirstPlayer() {
+		Random rand = new SecureRandom();
+		int randomNum = rand.nextInt(this.getPlayerList().size());
+		
+		this.setCurrentPlayer(this.getPlayerList().get(randomNum));
+		this.setLastPlayer(this.getPlayerList().get(randomNum));
+	}
+
+	public boolean isDefuseLeft() {
+		List<Card> listOfCard = this.getCardList();
+		
+		for (Card card: listOfCard) {
+			if (card.getType() == CardType.DIFFUSE && card.getState() == CardState.HIDDEN) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isRoundOver() {
+		List<Card> listOfCard = this.getCardList();
+		int nbCardRevealedThisTurn = 0;
+		int nbPlayer = this.getPlayerList().size();
+		
+		for (Card card: listOfCard) {
+			if (card.getOwner() != null && card.getState() == CardState.REVEALED) {
+				nbCardRevealedThisTurn = nbCardRevealedThisTurn + 1;
+			}
+		}
+		return nbCardRevealedThisTurn == nbPlayer;
+	}
+
+	public boolean isMatchOver() {
+		List<Card> listOfCard = this.getCardList();
+		int nbCardHidden = 0;
+		int nbPlayer = this.getPlayerList().size();
+		
+		for (Card card: listOfCard) {
+			if (card.getState() == CardState.HIDDEN) {
+				nbCardHidden = nbCardHidden + 1;
+			}
+		}
+		return nbCardHidden == nbPlayer;
+	}
+// ----- Methods ----- //
 
 }

@@ -1,6 +1,5 @@
 package fr.xitoiz.timebomb.user;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -8,7 +7,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +32,8 @@ public class UserApiController {
 
 	@Autowired
 	private UserSession userSession;
-    
+
+	
     @PostMapping("/inscription")
     private void inscription(@Valid @RequestBody User user) {
     	Optional<User> dbUser = this.daoUser.findByLogin(user.getLogin());
@@ -65,10 +64,5 @@ public class UserApiController {
 
 		return dbUser;
 	}
-	
-	@GetMapping
-	@JsonView(Views.User.class)
-	private List<User> getAllUser() {
-		return this.daoUser.findAll();
-	}
+
 }
