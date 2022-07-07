@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import fr.xitoiz.timebomb.card.Card;
+import fr.xitoiz.timebomb.projection.MatchProjection;
 import fr.xitoiz.timebomb.projection.Views;
 import fr.xitoiz.timebomb.user.UserSession;
 
@@ -37,6 +39,18 @@ public class MatchApiController {
 	@JsonView(Views.MatchSummary.class)
 	public List<Match> findAllMatch() {
 		return this.matchService.findAllMatch();
+	}
+	
+	@GetMapping("/{id}")
+	@JsonView(Views.MatchSummary.class)
+	public Match findMatchById(@PathVariable int id) {
+		return this.matchService.findById(id);
+	}
+	
+	@GetMapping("/projection/{id}")
+	@JsonView(Views.Match.class)
+	public MatchProjection findMatchProjectedById(@PathVariable int id) {
+		return this.matchService.findProjectedById(id);
 	}
 	
 	@GetMapping("/pending")

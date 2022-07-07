@@ -28,6 +28,7 @@ import fr.xitoiz.timebomb.exeption.PlayerNotInThisMatchException;
 import fr.xitoiz.timebomb.exeption.PlayerNotYourTurnException;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
 import fr.xitoiz.timebomb.match_result.MatchResultService;
+import fr.xitoiz.timebomb.projection.MatchProjection;
 import fr.xitoiz.timebomb.user.User;
 import fr.xitoiz.timebomb.user.UserDAO;
 import fr.xitoiz.timebomb.user.UserSession;
@@ -61,6 +62,23 @@ public class MatchService {
 	//@GetMapping
 	public List<Match> findAllMatch() {
 		return this.daoMatch.findAll();
+	}
+	
+	//@GetMapping("/{id}")
+	public Match findById(int id) {
+		return this.daoMatch.getById(id);
+	}
+	
+	//@GetMapping("/projected/{id}")
+	public MatchProjection findProjectedById(int id) {
+		User user = this.daoUser.getById(this.userSession.getId());
+		Match match = this.daoMatch.findById(id).orElseThrow(MatchNotFoundException::new);
+		
+		for (User u : match.getPlayerList()) {
+			if (u.getId() == user.getId()) {return new MatchProjection(match, user);}
+		}
+		
+		return new MatchProjection(match);
 	}
 	
 	//@GetMapping("/pending")

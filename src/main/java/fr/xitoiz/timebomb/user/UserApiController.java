@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import fr.xitoiz.timebomb.enums.AccountType;
 import fr.xitoiz.timebomb.exeption.LoginAlreadyUsedException;
 import fr.xitoiz.timebomb.exeption.TransactionErrorException;
 import fr.xitoiz.timebomb.exeption.UserNotFoundException;
@@ -42,6 +43,8 @@ public class UserApiController {
     	}
     	
     	user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+    	
+    	user.setAccountType(AccountType.PLAYER);
     	
     	try {
     		this.daoUser.save(user);
